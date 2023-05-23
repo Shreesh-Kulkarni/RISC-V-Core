@@ -41,18 +41,21 @@
    |cpu
       @0
          $reset = *reset;
-         $pc[31:0] = >>1$reset? 0 :
-                     >>3$valid_taken_br? >>3$br_tgt_pc[31:0]:
-                     (>>3$valid_jump && >>3$is_jal)? >>3$br_tgt_pc:
-                     (>>3$valid_jump && >>3$is_jalr)? >>3$jalr_tgt_pc:
-                     >>3$valid_load ? >>3$pc[31:0] + 32'd4:
-                     >>1$pc[31:0] + 32'd4;
-         $imem_rd_en = !$reset;
-         $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
          $start = !$reset && >>1$reset;
+         
+         $pc[31:0] = >>1$reset? 32'b0 :
+                     >>3$valid_taken_br? >>3$br_tgt_pc[31:0]:
+                     >>3$valid_jump && >>3$is_jal? >>3$br_tgt_pc:
+                     >>3$valid_jump && >>3$is_jalr? >>3$jalr_tgt_pc:
+                     >>3$valid_load ? >>3$inc_pc:
+                     >>1$inc_pc;
+         
+         
          //$valid = $reset? 0 : $start? 1'b1 : >>3$valid;
       @1
-         //$incr_pc = $pc[31:0] + 32'd4;
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
+         $imem_rd_en = !$reset;
+         $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
          $instr[31:0] = $imem_rd_data[31:0];
          $is_i_instr = $instr[6:2] ==? 5'b0000x ||
                        $instr[6:2] ==? 5'b001x0 ||
@@ -69,14 +72,14 @@
                       $is_s_instr ? { {21{$instr[31]}}, $instr[30:25], $instr[11:7]} :
                       $is_b_instr ? { {20{$instr[31]}}, $instr[7], $instr[30:25], $instr[11:8], 1'b0} :
                       $is_u_instr ? { $instr[31:12], 12'b0} :
-                      $is_j_instr ? { {12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:21], 1'b0} : 
+                      $is_j_instr ? { {12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:21], 1'b0} :
                       32'b0;
-         $funct7[6:0] = $instr[31:25];
-         $funct3[2:0] = $instr[14:12];
-         $rs1[4:0] = $instr[19:15];
-         $rs2[4:0] = $isntr[24:20];
-         $rd[4:0] = $instr[11:7];
-         $opcode[6:0] = $instr[6:0];
+         //$funct7[6:0] = $instr[31:25];
+         //$funct3[2:0] = $instr[14:12];
+         //$rs1[4:0] = $instr[19:15];
+         //$rs2[4:0] = $isntr[24:20];
+         //$rd[4:0] = $instr[11:7];
+         //$opcode[6:0] = $instr[6:0];
          $rs2_valid = $is_r_instr || $is_s_instr || $is_b_instr;
          ?$rs2_valid
             $rs2[4:0] = $instr[24:20];
@@ -95,6 +98,9 @@
          ?$rd_valid
             $rd[4:0] = $instr[11:7];
          $opcode[6:0] = $instr[6:0];
+         
+    
+      @2
          $dec_bits[10:0] = {$funct7[5], $funct3,$opcode};
          $is_beq = $dec_bits ==? 11'bx_000_1100011;
          $is_bne = $dec_bits ==? 11'bx_001_1100011;
@@ -128,21 +134,35 @@
          $is_sh     = $dec_bits ==? 11'bx_001_0100011;
          $is_sw     = $dec_bits ==? 11'bx_010_0100011;
          $is_slti   = $dec_bits ==? 11'bx_010_0010011;
-         $is_load   = $opcode == 7'b0000011;
+         $is_lb = $dec_bits ==? 11'bx_000_0000011;
+         $is_lh = $dec_bits ==? 11'bx_001_0000011;
+         $is_lw = $dec_bits ==? 11'bx_010_0000011;
+         $is_lbu = $dec_bits ==? 11'bx_100_0000011;
+         $is_lhu = $dec_bits ==? 11'bx_101_0000011;
          
+         //$is_load   = $opcode == 7'b0000011;
+         $is_load = $is_lb || $is_lh || $is_lw || $is_lbu || $is_lhu;
          `BOGUS_USE($is_lui $is_auipc $is_jal $is_jalr $is_beq $is_bne $is_blt $is_bge $is_bltu $is_bgeu $is_lb $is_lh $is_lw $is_lbu $is_lhu $is_sb $is_sh $is_sw $is_addi $is_slti $is_sltiu $is_xori $is_ori $is_andi $is_slli $is_srli $is_srai $is_add $is_sub $is_sll $is_slt $is_sltu $is_xor $is_srl $is_sra $is_or $is_and)
-      @2
+         
          $rf_rd_en1 = $rs1_valid;
          $rf_rd_en2 = $rs2_valid;
          $rf_rd_index1[4:0] = $rs1[4:0];
          $rf_rd_index2[4:0] = $rs2[4:0];
          //$src1_value[31:0] = $rf_rd_data1[31:0];
-         $src1_value[31:0] = (>>1$rf_wr_en && (>>1$rd[4:0] == $rs1[4:0]))? >>1$result[31:0]: $rf_rd_data1[31:0];
-         $src2_value[31:0] = (>>1$rf_wr_en && (>>1$rd[4:0] == $rs2[4:0]))? >>1$result[31:0]: $rf_rd_data2[31:0];
+         $src1_value[31:0] = (>>1$rf_wr_en && (>>1$rf_wr_index == $rf_rd_index1))? >>1$result[31:0]: $rf_rd_data1[31:0];
+         $src2_value[31:0] = (>>1$rf_wr_en && (>>1$rf_wr_index == $rf_rd_index2))? >>1$result[31:0]: $rf_rd_data2[31:0];
          $br_tgt_pc[31:0] = $pc[31:0] + $imm[31:0];
+         $jalr_tgt_pc = $src1_value + $imm;
       @3
-         $sltu_rslt[31:0]  = $src1_value[31:0] < $src2_value[31:0];
-         $sltiu_rslt[31:0] = $src1_value[31:0] < $imm;
+         $taken_br = $is_beq? ($src1_value == $src2_value):
+                     $is_bne ? ($src1_value != $src2_value):
+                     $is_blt ? (($src1_value < $src2_value) ^ ($src1_value[31] != $src2_value[31])):
+                     $is_bge ? (($src1_value >= $src2_value) ^ ($src1_value[31] != $src2_value[31])):
+                     $is_bltu ? ($src1_value < $src2_value):
+                     $is_bgeu ? ($src1_value >= $src2_value):
+                     1'b0;
+         $valid = !(>>1$valid_taken_br || >>2$valid_taken_br|| >>1$valid_load || >>2$valid_load);
+         $valid_taken_br = $valid && $taken_br;
          $result[31:0] = $is_addi?
                          $src1_value[31:0] + $imm[31:0] :
                          $is_add?
@@ -175,7 +195,7 @@
                          $src1_value[31:0] >> $src2_value[4:0] :
                          $is_sltu?
                          $sltu_rslt :
-                         $is_sltiu? 
+                         $is_sltiu?
                          $sltiu_rslt :
                          $is_lui?
                          {$imm[31:12], 12'b0} :
@@ -194,29 +214,23 @@
                          $is_sra?
                          { {32{$src1_value[31]}}, $src1_value} >> $src2_value[4:0] :
                          32'bx;
+         $sltu_rslt[31:0]  = $src1_value[31:0] < $src2_value[31:0];
+         $sltiu_rslt[31:0] = $src1_value[31:0] < $imm;
          
-         $taken_br = $is_beq? ($src1_value == $src2_value):
-                     $is_bne ? ($src1_value != $src2_value):
-                     $is_blt ? (($src1_value < $src2_value) ^ ($src1_value[31] != $src2_value[31])):
-                     $is_bge ? (($src1_value >= $src2_value) ^ ($src1_value[31] != $src2_value[31])):
-                     $is_bltu ? ($src1_value < $src2_value):
-                     $is_bgeu ? ($src1_value >= $src2_value):
-                     1'b0;
+         
          `BOGUS_USE($taken_br)
          //$is_load = $is_lb || $is_lh || $is_lw || $is_lbu || $is_lhu;
-         $is_jump = $is_jal || $is_jalr;
-         $jalr_tgt_pc = $src1_value + $imm;
-         $valid_jump = $valid && $is_jump;
-         $valid = !(>>1$valid_taken_br || >>2$valid_taken_br|| >>1$valid_load || >>2$valid_load || $valid_jump);
-         $valid_taken_br = $valid && $taken_br;
          $valid_load = $valid && $is_load;
+         $is_jump = $is_jal || $is_jalr;
          
+         $valid_jump = $valid && $is_jump;
+     
          $rf_wr_en = ($valid && $rd_valid && $rd != 5'b0) || >>2$valid_load;
          $rf_wr_index[4:0] = >>2$valid_load ? >>2$rd : $rd;
          $rf_wr_data[31:0] = >>2$valid_load ? >>2$ld_data : $result;
       @4
          $dmem_wr_en = $is_s_instr && $valid;
-         $dmem_rd_en = $is_load && $valid;
+         $dmem_rd_en = $is_load;
          $dmem_addr[3:0] = $result[5:2];
          $dmem_wr_data[31:0] = $src2_value;
       @5
@@ -251,7 +265,7 @@
 
    
    // Assert these to end simulation (before Makerchip cycle limit).
-   //*passed = |cpu/xreg[15]>>5$value == (1+2+3+4+5+6+7+8+9);
+   *passed = |cpu/xreg[15]>>5$value == (1+2+3+4+5+6+7+8+9);
    *failed = 1'b0;
    
    // Macro instantiations for:
