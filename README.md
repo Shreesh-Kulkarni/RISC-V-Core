@@ -19,7 +19,7 @@ The System verilog file for the same is also uploaded for reference. The TLV fil
  * This core was succesfully run on a virtual FPGA server powered by Redwood EDA. The board used was the Zynq Processor which consists of ARM-Cortex 
             CPU and Artix-7 FPGA. It was compiled using the PYNQ framework by Xilinx. 
 
-### If you want to view my project, you can visit  the [Makerchip IDE platform](makerchip.com). Make sure to clone my core onto the Makerchip IDE and then you can run it.
+### If you want to view my project, you can visit  the [Makerchip IDE platform](https://www.makerchip.com). Make sure to clone my core onto the Makerchip IDE and then you can run it.
 
 For Visual Debug  option, make sure you specify the final pipeline stage for your cpu.
 
