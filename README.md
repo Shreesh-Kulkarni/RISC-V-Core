@@ -7,7 +7,7 @@ This repository is for the MYTH(Microprocessors in Thirty Hours) by Redwood EDA 
 
 The final RV32I core in TLV format can be viewed in the RV32Icore.tlv file.
 
-The System verilog file for the same is also uploaded for reference(rv32icoredef.sv for signal definitions and rv32icore.sv for logic). The TLV file is converted to the SV file using Sandpiper SaaS compiler in Makerchip IDE.
+The System verilog file for the same is also uploaded for reference ( _rv32icoredef.sv for signal definitions and rv32icore.sv for logic_ ). The TLV file is converted to the SV file using Sandpiper SaaS compiler in Makerchip IDE.
 
 The remaining files are just for my reference. Kindly ignore them.
 
