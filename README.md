@@ -3,6 +3,7 @@ A repository consisting of all the project files and codes for RISC-V Processor 
 
 This repository is for the MYTH(Microprocessors in Thirty Hours) by Redwood EDA and TheEEView.
 
+The final RV32I core in TLV format can be viewed in the RV32Icore.tlv file.
 
 ### If you want to view my project, you can visit the public sandbox link for the makerchip platform below.
 
