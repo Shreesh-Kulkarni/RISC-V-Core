@@ -14,12 +14,12 @@ The remaining files are just for my reference. Kindly ignore them.
 # _Important Notes_ :-
 * The CPU core is compatible with Verilator and almost all open-source simulators once converted to System-Verilog which can be done easily via the              Sandpiper SaaS compiler tool.
 - The core's features include 5-stage pipelining, support for all RV32I instruction set along with resolving the Pipeline Hazards using Register   
-            Forwarding for RAW hazards and Branch redirect for Control Hazards.
+  Forwarding for RAW hazards and Branch redirect for Control Hazards.
 + Makerchip's Incredible platform allows simple access to the core and any modifications can be done without affecting the rest of the core. The   
-            Visual debug tool invented by Redwood EDA provides a very clean and thourough visualization of the core, and it can be used to debug any errors 
+  Visual debug tool invented by Redwood EDA provides a very clean and thourough visualization of the core, and it can be used to debug any errors 
             your CPU core may have.
  * This core was succesfully run on a virtual FPGA server powered by Redwood EDA. The board used was the Zynq Processor which consists of ARM-Cortex 
-            CPU and Artix-7 FPGA. It was compiled using the PYNQ framework by Xilinx. 
+   CPU and Artix-7 FPGA. It was compiled using the PYNQ framework by Xilinx. 
 
 ### If you want to view my project, you can visit  the [Makerchip IDE platform](https://www.makerchip.com). Make sure to clone my core(RV32Icore.tlv file) onto the Makerchip IDE and then you can run it.
 
