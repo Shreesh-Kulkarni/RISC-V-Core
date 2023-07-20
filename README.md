@@ -1,5 +1,7 @@
 # 5-Stage Pipelined RISC-V Processor(RV32I)
 A repository consisting of all the project files and codes for RISC-V Processor design using Transaction Level Verilog.
+![WhatsApp Image 2023-07-19 at 20 29 10](https://github.com/Shreesh-Kulkarni/RISC-V-Core/assets/78203773/dcdab14d-2701-47e2-9e08-86047ebbdb74)
+
 
 The CPU core is based on the RV32I ISA. For more information refer the the [RISC-V Specification](https://github.com/riscv/riscv-isa-manual/releases/download/Ratified-IMAFDQC/riscv-spec-20191213.pdf)
 
